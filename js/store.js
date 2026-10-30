@@ -36,8 +36,9 @@ window.CA_DB = (function () {
   const writeLS = (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      return true;
     } catch (e) {
-      /* ignore quota errors */
+      return false;
     }
   };
 
@@ -190,8 +191,11 @@ window.CA_DB = (function () {
     if (!live) {
       const list = readLS(LS_PRODUCTS, []);
       const id = newId();
-      list.unshift({ ...payload, id, createdAt: new Date().toISOString() });
-      writeLS(LS_PRODUCTS, list);
+      const next = [{ ...payload, id, createdAt: new Date().toISOString() }, ...list];
+      const stored = writeLS(LS_PRODUCTS, next);
+      if (!stored || !readLS(LS_PRODUCTS, []).some((p) => p.id === id)) {
+        throw new Error("مساحة التخزين المحلية ممتلئة. اربطي Firebase أو استخدمي صورة أصغر.");
+      }
       return { id };
     }
 
@@ -206,7 +210,9 @@ window.CA_DB = (function () {
     if (!live) {
       const list = readLS(LS_PRODUCTS, []);
       const next = list.map((p) => (p.id === id ? { ...p, ...data } : p));
-      writeLS(LS_PRODUCTS, next);
+      if (!writeLS(LS_PRODUCTS, next)) {
+        throw new Error("مساحة التخزين المحلية ممتلئة. اربطي Firebase أو استخدمي صورة أصغر.");
+      }
       return;
     }
     const { api, db } = fb;
