@@ -1,0 +1,27 @@
+# node / tooling
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# build outputs
+dist/
+build/
+.next/
+out/
+
+# system / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# local env & secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# DO NOT commit real Firebase credentials
+js/firebase-config.local.js

@@ -1,0 +1,12 @@
+{
+  "name": "crochet-amal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "متجر كروشيه أمل — صفحة هبوط + لوحة تحكم مربوطة بـ Firebase والطلبات عبر واتساب",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": ["crochet", "handmade", "store", "firebase", "whatsapp"],
+  "license": "MIT"
+}

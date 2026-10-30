@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// ============================================================
+//  Crochet Amal — قواعد أمان Firebase
+//  انسخي محتوى هذا الملف في:
+//  Firebase Console ← Firestore Database ← Rules ← Publish
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // المنتجات: القراءة للجميع، الكتابة للمشرفة المسجّلة فقط
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // إعدادات الموقع: القراءة للجميع، الكتابة للمشرفة فقط
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // كل ما عدا ذلك ممنوع
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

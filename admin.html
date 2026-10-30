@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة تحكم | كروشيه أمل</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='50' fill='%23f4e3dc'/%3E%3Ctext x='50' y='68' font-size='54' text-anchor='middle' fill='%23a25c45' font-family='serif'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.19 5.06 4.47.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.05 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.78 9.78 0 0 1-1.5-5.23c0-5.4 4.4-9.8 9.82-9.8 2.62 0 5.08 1.02 6.93 2.88a9.73 9.73 0 0 1 2.87 6.93c0 5.4-4.4 9.8-9.81 9.8zm8.35-18.15A11.7 11.7 0 0 0 12.05.2C5.55.2.26 5.49.25 11.98c0 2.08.54 4.1 1.57 5.89L.15 24l6.27-1.64a11.75 11.75 0 0 0 5.62 1.43h.01c6.5 0 11.78-5.29 11.79-11.79a11.7 11.7 0 0 0-3.44-8.35z"/></symbol>
+  <symbol id="i-flower" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.6"/><path d="M12 9.4c0-2 .3-4.3 0-5.4-.4-1.4-3 0-3 1.8 0 1.3 1.2 2.4 3 3.6ZM14.6 12c2 0 4.3.3 5.4 0 1.4-.4 0-3-1.8-3-1.3 0-2.4 1.2-3.6 3ZM12 14.6c0 2-.3 4.3 0 5.4.4 1.4 3 0 3-1.8 0-1.3-1.2-2.4-3-3.6ZM9.4 12c-2 0-4.3-.3-5.4 0-1.4.4 0 3 1.8 3 1.3 0 2.4-1.2 3.6-3Z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/><path d="M10 11v5M14 11v5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10a2.5 2.5 0 0 0-3.5-3.5L4.5 16.5 4 20Z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 2.6 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9.5 4a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 20.4 11a2 2 0 1 1 0 4Z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5v13A1.5 1.5 0 0 1 18.5 20H15"/><path d="M10 8l-4 4 4 4M6 12h9"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 4.5-4.5 3.5 3.5 3-3L20 17"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10" width="15" height="10" rx="2.5"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3.5 7.5v9L12 21l8.5-4.5v-9L12 3Z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1-6.2L3 9.6l6.2-.9L12 3Z"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.8 20h18.4L12 4Z"/><path d="M12 10v4M12 17.2v.2"/></symbol>
+</svg>
+
+<!-- ==================== LOGIN ==================== -->
+<section class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <a class="brand" href="index.html" style="justify-content:center;margin-bottom:1.2rem">
+      <span class="brand-mark"><svg><use href="#i-flower"/></svg></span>
+      <span class="brand-text"><b>كروشيه أمل</b><span>CROCHET AMAL</span></span>
+    </a>
+    <h1>لوحة التحكم</h1>
+    <p class="login-sub">سجّلي الدخول لإدارة المنتجات وإعدادات المتجر.</p>
+
+    <form id="loginForm" class="login-form">
+      <label>
+        <span>البريد الإلكتروني</span>
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="amal@example.com" required />
+      </label>
+      <label>
+        <span>كلمة المرور</span>
+        <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" required />
+      </label>
+      <button class="btn btn--primary btn--block" type="submit" id="loginBtn">
+        <svg><use href="#i-lock"/></svg> تسجيل الدخول
+      </button>
+      <p class="form-error" id="loginError" hidden></p>
+    </form>
+
+    <div class="demo-hint" id="demoHint" hidden>
+      <b>الوضع التجريبي</b>
+      <p>لم يتم ربط Firebase بعد. يمكنك الدخول بكلمة المرور التجريبية:</p>
+      <code>amal1234</code>
+      <p style="margin:.6rem 0 0;font-size:.82rem">لتشغيل اللوحة بشكل حقيقي، املأ <code>js/firebase-config.js</code>.</p>
+    </div>
+
+    <a class="login-back" href="index.html">← العودة إلى المتجر</a>
+  </div>
+</section>
+
+<!-- ==================== DASHBOARD ==================== -->
+<div class="admin-shell" id="adminShell" hidden>
+  <aside class="admin-sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark"><svg><use href="#i-flower"/></svg></span>
+      <span class="brand-text"><b>كروشيه أمل</b><span>ADMIN</span></span>
+    </a>
+
+    <nav class="admin-nav">
+      <button class="admin-nav__item is-active" data-tab="products">
+        <svg><use href="#i-box"/></svg> المنتجات
+      </button>
+      <button class="admin-nav__item" data-tab="new">
+        <svg><use href="#i-plus"/></svg> إضافة منتج
+      </button>
+      <button class="admin-nav__item" data-tab="settings">
+        <svg><use href="#i-settings"/></svg> إعدادات المتجر
+      </button>
+    </nav>
+
+    <div class="admin-sidebar__foot">
+      <a class="btn btn--ghost btn--block btn--sm" href="index.html" target="_blank" rel="noopener">
+        <svg><use href="#i-eye"/></svg> عرض المتجر
+      </a>
+      <button class="btn btn--ghost btn--block btn--sm" id="logoutBtn">
+        <svg><use href="#i-logout"/></svg> خروج
+      </button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <h2 id="pageTitle">المنتجات</h2>
+        <p id="pageSub">أضيفي وعدّلي القطع المعروضة في المتجر.</p>
+      </div>
+      <div class="admin-topbar__actions">
+        <span class="status-pill" id="statusPill"><i></i> جارٍ التحقق…</span>
+        <span class="user-pill" id="userPill"></span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- ---------- TAB: products ---------- -->
+      <section class="tab-panel is-active" id="tab-products">
+        <div class="stat-grid" id="statGrid">
+          <div class="stat-card">
+            <span class="stat-card__icon"><svg><use href="#i-box"/></svg></span>
+            <div><b id="statTotal">0</b><span>إجمالي المنتجات</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon is-green"><svg><use href="#i-check"/></svg></span>
+            <div><b id="statAvailable">0</b><span>متوفرة الآن</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon is-pink"><svg><use href="#i-star"/></svg></span>
+            <div><b id="statFeatured">0</b><span>مميّزة في المتجر</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <h3>قائمة المنتجات</h3>
+            <div class="panel__head-actions">
+              <input class="search-input" id="adminSearch" type="search" placeholder="ابحث بالاسم أو القسم…" />
+              <button class="btn btn--primary btn--sm" data-goto-tab="new">
+                <svg><use href="#i-plus"/></svg> منتج جديد
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-products" id="adminProducts"></div>
+        </div>
+
+        <div class="panel panel--muted" id="demoResetPanel" hidden>
+          <div>
+            <h3 style="margin-bottom:.2rem">بيانات تجريبية</h3>
+            <p style="margin:0;color:var(--ink-soft);font-size:.9rem">يمكنك استعادة المنتجات الافتراضية (٦ قطع) لبدء العرض من جديد.</p>
+          </div>
+          <button class="btn btn--ghost btn--sm" id="resetDemoBtn">استعادة المنتجات الافتراضية</button>
+        </div>
+      </section>
+
+      <!-- ---------- TAB: new/edit ---------- -->
+      <section class="tab-panel" id="tab-new">
+        <form class="panel product-form" id="productForm" novalidate>
+          <div class="panel__head">
+            <h3 id="formTitle">إضافة منتج جديد</h3>
+            <span class="edit-badge" id="editBadge" hidden>وضع التعديل</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-fields">
+              <label class="field">
+                <span>اسم المنتج <em>*</em></span>
+                <input id="pName" type="text" required maxlength="80" placeholder="مثال: حقيبة كتف بالوردة الكروشيه" />
+              </label>
+
+              <div class="form-row">
+                <label class="field">
+                  <span>القسم <em>*</em></span>
+                  <input id="pCategory" type="text" required list="catList" placeholder="حقائب" />
+                  <datalist id="catList"></datalist>
+                </label>
+                <label class="field">
+                  <span>السعر (د.م) <em>*</em></span>
+                  <input id="pPrice" type="number" min="0" step="1" required placeholder="320" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label class="field">
+                  <span>السعر قبل التخفيض (اختياري)</span>
+                  <input id="pOldPrice" type="number" min="0" step="1" placeholder="380" />
+                </label>
+                <label class="field">
+                  <span>ترتيب العرض</span>
+                  <input id="pOrder" type="number" step="1" value="0" />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>وصف المنتج</span>
+                <textarea id="pDesc" rows="4" maxlength="600" placeholder="خيوط قطنية، المقاس، الألوان المتوفرة، مدة التحضير…"></textarea>
+                <small class="field-hint"><span id="descCount">0</span>/600</small>
+              </label>
+
+              <div class="switch-row">
+                <label class="switch">
+                  <input type="checkbox" id="pAvailable" checked />
+                  <span class="switch__track"><span class="switch__thumb"></span></span>
+                  <span>متوفر للطلب</span>
+                </label>
+                <label class="switch">
+                  <input type="checkbox" id="pFeatured" />
+                  <span class="switch__track"><span class="switch__thumb"></span></span>
+                  <span>منتج مميّز (يظهر أولًا)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-media">
+              <span class="field-label">صورة المنتج</span>
+              <div class="upload-box" id="uploadBox">
+                <input id="pImageFile" type="file" accept="image/*" hidden />
+                <div class="upload-preview" id="uploadPreview">
+                  <svg><use href="#i-image"/></svg>
+                  <b>اسحبي الصورة هنا أو اضغطي للاختيار</b>
+                  <span>JPG أو PNG · يُفضّل صورة مربعة</span>
+                </div>
+              </div>
+              <div class="form-row" style="margin-top:.7rem">
+                <button type="button" class="btn btn--ghost btn--sm" id="pickImageBtn">
+                  <svg><use href="#i-image"/></svg> اختيار صورة
+                </button>
+                <button type="button" class="btn btn--ghost btn--sm" id="clearImageBtn" hidden>إزالة</button>
+              </div>
+              <label class="field" style="margin-top:.9rem">
+                <span>أو رابط صورة</span>
+                <input id="pImageUrl" type="url" placeholder="https://…" />
+              </label>
+              <p class="field-hint" id="uploadHint">سيتم ضغط الصورة تلقائيًا قبل الحفظ.</p>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit" id="saveBtn">
+              <svg><use href="#i-check"/></svg> <span id="saveBtnLabel">حفظ المنتج</span>
+            </button>
+            <button class="btn btn--ghost" type="button" id="cancelEditBtn" hidden>إلغاء التعديل</button>
+            <span class="form-status" id="formStatus"></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- ---------- TAB: settings ---------- -->
+      <section class="tab-panel" id="tab-settings">
+        <form class="panel product-form" id="settingsForm">
+          <div class="panel__head"><h3>بيانات التواصل والإعدادات</h3></div>
+
+          <div class="form-grid">
+            <div class="form-fields">
+              <label class="field">
+                <span>رقم واتساب (بصيغة دولية) <em>*</em></span>
+                <input id="sWhatsapp" type="tel" required placeholder="212600000000" dir="ltr" />
+                <small class="field-hint">مثال: 212600000000 — بدزن + أو مسافات. الطلبات تُرسل إلى هذا الرقم.</small>
+              </label>
+              <label class="field">
+                <span>الشريط العلوي في المتجر</span>
+                <input id="sAnnouncement" type="text" maxlength="120" placeholder="توصيل لجميع مدن المغرب · صناعة يدوية 100%" />
+              </label>
+              <div class="form-row">
+                <label class="field">
+                  <span>إنستغرام (اسم المستخدم)</span>
+                  <input id="sInstagram" type="text" dir="ltr" placeholder="crochet_amal" />
+                </label>
+                <label class="field">
+                  <span>فيسبوك (اسم الصفحة أو رابط)</span>
+                  <input id="sFacebook" type="text" dir="ltr" placeholder="crochetamal" />
+                </label>
+              </div>
+              <label class="field">
+                <span>البريد الإلكتروني</span>
+                <input id="sEmail" type="email" dir="ltr" placeholder="hello@crochetamal.com" />
+              </label>
+            </div>
+
+            <div class="settings-aside">
+              <div class="tip-card">
+                <b>كيف تصل الطلبات؟</b>
+                <p>الزبونة تختار المنتجات وتضغط «إتمام الطلب»، فيُفتح واتساب برسالة جاهزة تحتوي المنتجات والمجموع. تأكدي من صحة الرقم أعلاه.</p>
+              </div>
+              <div class="tip-card">
+                <b>ربط Firebase</b>
+                <p>الحالة الحالية: <strong id="fbStatusText">—</strong></p>
+                <p style="margin:0">للتشغيل الحقيقي، املأ الإعدادات في <code>js/firebase-config.js</code> وفعّل Firestore وStorage وقاعدة الأمان.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit">
+              <svg><use href="#i-check"/></svg> حفظ الإعدادات
+            </button>
+            <span class="form-status" id="settingsStatus"></span>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
