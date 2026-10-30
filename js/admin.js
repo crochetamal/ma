@@ -92,10 +92,7 @@
         const user = await CA_DB.signIn(email, pass);
         if (user) showDashboard(user);
       } catch (ex) {
-        err.textContent =
-          ex && ex.code === "auth/invalid-credential"
-            ? "البريد أو كلمة المرور غير صحيحة."
-            : "تعذّر تسجيل الدخول: " + (ex && ex.message ? ex.message : "خطأ غير معروف");
+        err.textContent = "تعذّر تسجيل الدخول: " + CA_DB.humanError(ex);
         err.hidden = false;
       } finally {
         btn.disabled = false;
@@ -172,15 +169,29 @@
   }
 
   async function loadProducts() {
+    let failed = false;
     try {
       state.products = await CA_DB.getProducts();
     } catch (err) {
-      console.error(err);
-      toast("تعذّر تحميل المنتجات من Firebase");
+      console.error("[Crochet Amal] تعذّر تحميل المنتجات:", err);
       state.products = [];
+      failed = true;
+      const wrap = $("#adminProducts");
+      if (wrap) {
+        wrap.innerHTML = `
+          <div class="admin-empty">
+            <svg><use href="#i-warning"/></svg>
+            <p style="margin:0 0 .4rem"><b>تعذّر تحميل المنتجات</b></p>
+            <p style="margin:0 0 .9rem;font-size:.88rem">${esc(CA_DB.humanError(err))}</p>
+            <button class="btn btn--ghost btn--sm" id="retryLoad">إعادة المحاولة</button>
+          </div>`;
+        const retry = $("#retryLoad");
+        if (retry) retry.addEventListener("click", loadProducts);
+      }
     }
     renderStats();
-    renderAdminProducts();
+    if (!failed) renderAdminProducts();
+    return !failed;
   }
 
   /* ---------------- form ---------------- */
@@ -342,7 +353,7 @@
       renderCategories();
     } catch (err) {
       console.error(err);
-      $("#formStatus").textContent = "فشل الحفظ: " + (err.message || err.code || "خطأ غير معروف");
+      $("#formStatus").textContent = "فشل الحفظ: " + CA_DB.humanError(err);
       $("#formStatus").classList.add("is-err");
       toast("تعذّر حفظ المنتج");
     } finally {
@@ -370,7 +381,7 @@
     $("#sAnnouncement").value = state.settings.announcement || "";
     $("#fbStatusText").textContent = CA_DB.isLive
       ? "متصل بـ Firebase (Firestore + Storage)"
-      : "الوضع التجريبي المحلي (localStorage)";
+      : "غير متصل — " + (CA_DB.humanError(CA_DB.bootError) || "تعذّر الوصول");
   }
 
   function initSettingsForm() {
@@ -392,9 +403,10 @@
         status.textContent = "تم الحفظ ✓";
         toast("تم حفظ الإعدادات");
         state.settings = { ...state.settings, ...data };
+        refreshSetupWarning();
       } catch (err) {
         console.error(err);
-        status.textContent = "فشل الحفظ: " + (err.message || err.code);
+        status.textContent = "فشل الحفظ: " + CA_DB.humanError(err);
         status.classList.add("is-err");
       }
       setTimeout(() => (status.textContent = ""), 4000);
@@ -504,7 +516,7 @@
           toast(p.available === false ? "أصبح المنتج متوفرًا" : "أُخفي المنتج كغير متوفر");
           await loadProducts();
         } catch (err) {
-          toast("تعذّر التحديث");
+          toast(CA_DB.humanError(err));
         }
         return;
       }
@@ -517,16 +529,28 @@
           await loadProducts();
           renderCategories();
         } catch (err) {
-          toast("تعذّر الحذف");
+          toast(CA_DB.humanError(err));
         }
       }
     });
 
-    $("#resetDemoBtn").addEventListener("click", async () => {
-      if (!confirm("استعادة المنتجات الافتراضية؟ سيتم استبدال القائمة الحالية.")) return;
-      await CA_DB.resetDemoProducts();
-      await loadProducts();
-      toast("تمت استعادة المنتجات الافتراضية");
+    $("#seedBtn").addEventListener("click", async () => {
+      if (!confirm("استيراد ٦ منتجات جاهزة إلى متجرك؟ يمكنك تعديلها أو حذفها بعد ذلك.")) return;
+      const btn = $("#seedBtn");
+      btn.disabled = true;
+      btn.textContent = "جارٍ الاستيراد…";
+      try {
+        const count = await CA_DB.seedStarterProducts();
+        await loadProducts();
+        toast(`تم استيراد ${count} منتجات — عدّليها كما تشائين`);
+        $("#seedPanel").hidden = true;
+      } catch (err) {
+        console.error(err);
+        toast(CA_DB.humanError(err));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "استيراد منتجات البداية";
+      }
     });
 
     initSettingsForm();
@@ -535,31 +559,52 @@
   /* ---------------- boot ---------------- */
   let booted = false;
 
+  function refreshSetupWarning() {
+    const wa = String(state.settings.whatsapp || "").replace(/\D/g, "");
+    const missing = !wa || wa === "212600000000";
+    const panel = $("#setupWarnPanel");
+    if (panel) panel.hidden = !missing;
+  }
+
   async function bootDashboard() {
     if (booted) return;
     booted = true;
-    await CA_DB.ready;
-    await Promise.all([loadProducts(), loadSettings()]);
+
+    const pill = $("#statusPill");
+    pill.className = "status-pill";
+    pill.innerHTML = "<i></i> جارٍ الاتصال بـ Firebase…";
+
+    const [ok] = await Promise.all([loadProducts(), loadSettings()]);
     renderCategories();
     bindDashboardEvents();
     resetForm();
 
-    $("#demoResetPanel").hidden = CA_DB.isLive;
-
-    const pill = $("#statusPill");
-    if (CA_DB.isLive) {
+    if (ok) {
       pill.className = "status-pill is-live";
       pill.innerHTML = "<i></i> متصل بـ Firebase";
+      $("#seedPanel").hidden = state.products.length > 0;
+      refreshSetupWarning();
     } else {
-      pill.className = "status-pill is-demo";
-      pill.innerHTML = "<i></i> وضع تجريبي · بيانات محلية";
+      pill.className = "status-pill is-error";
+      pill.innerHTML = "<i></i> تعذّر الاتصال بقاعدة البيانات";
+      $("#seedPanel").hidden = true;
+      $("#setupWarnPanel").hidden = true;
     }
   }
 
   async function init() {
-    await CA_DB.ready;
+    const res = await CA_DB.ready;
 
-    if (!CA_DB.configured) $("#demoHint").hidden = false;
+    if (!res.live) {
+      const hint = $("#connHint");
+      if (hint) {
+        hint.hidden = false;
+        $("#connHintText").textContent = CA_DB.humanError(CA_DB.bootError);
+      }
+      const btn = $("#loginBtn");
+      if (btn) btn.disabled = true;
+      return;
+    }
 
     initAuth();
 

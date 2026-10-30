@@ -1,25 +1,19 @@
 /* ============================================================
-   إعدادات Firebase
+   إعدادات Firebase — مشروع amale-crochet (حقيقي)
    ------------------------------------------------------------
-   1) أنشئي مشروعًا على https://console.firebase.google.com
-   2) Authentication ← Sign-in method ← فعّلي Email/Password
-      ثم أضيفي مستخدمًا (بريد + كلمة مرور) للوحة التحكم.
-   3) Firestore Database ← Create database (production mode)
-   4) Storage ← Get started   (لرفع صور المنتجات)
-   5) Project settings ← Your apps ← Web app ← انسخي القيم هنا.
-   ------------------------------------------------------------
-   إذا تُركت القيم فارغة، يعمل الموقع تلقائيًا في «الوضع التجريبي»
-   (منتجات محلية + لوحة تحكم بكلمة مرور تجريبية).
+   هذه القيم عامة بطبيعتها في تطبيقات الويب (تظهر لأي زائر)،
+   والحماية الحقيقية تأتي من قواعد Firestore / Storage
+   الموجودة في مجلد firebase/.
+
+   ⚠️ لا تضعي كلمة مرور المشرفة هنا إطلاقًا — تُدار عبر
+   Firebase Authentication ← Users.
    ============================================================ */
 
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyDn3HXYY5wqyx_6D6Ahour2-l-i1yHaoR8",
+  authDomain: "amale-crochet.firebaseapp.com",
+  projectId: "amale-crochet",
+  storageBucket: "amale-crochet.firebasestorage.app",
+  messagingSenderId: "1029434187104",
+  appId: "1:1029434187104:web:8ff1c2bf2a2b048ae51205",
 };
-
-/* كلمة مرور الوضع التجريبي فقط (عندما لا يكون Firebase مضبوطًا) */
-window.CA_DEMO_PASSWORD = "amal1234";

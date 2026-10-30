@@ -534,36 +534,54 @@
   }
 
   /* ---------------- init ---------------- */
+  function renderLoadError(err) {
+    const grid = $("#productsGrid");
+    if (!grid) return;
+    console.warn("[Crochet Amal] تعذّر تحميل المنتجات:", err);
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <svg><use href="#i-flower"/></svg>
+        <p style="margin:0 0 1rem">
+          المجموعة تُحدَّث الآن ولا يمكن عرضها في هذه اللحظة.<br />
+          يمكنك مراسلتي على واتساب وسأرسل لك المتوفر فورًا.
+        </p>
+        <a class="btn btn--wa btn--sm" data-wa-link href="#" target="_blank" rel="noopener">
+          <svg><use href="#i-wa"/></svg> راسليني على واتساب
+        </a>
+      </div>`;
+    $$("[data-wa-link]").forEach((a) => {
+      a.href = waLink(genericMessage);
+      a.target = "_blank";
+    });
+  }
+
+  async function loadProducts() {
+    try {
+      const products = await CA_DB.getProducts();
+      state.products = products;
+      renderFilters();
+      renderProducts();
+      return true;
+    } catch (err) {
+      state.products = [];
+      renderFilters();
+      renderLoadError(err);
+      return false;
+    }
+  }
+
   async function init() {
     renderCart();
     bindEvents();
     initReveal();
     injectCustomerFields();
-
-    try {
-      const [settings, products] = await Promise.all([
-        CA_DB.getSettings(),
-        CA_DB.getProducts(),
-      ]);
-      state.settings = settings;
-      state.products = products;
-    } catch (err) {
-      console.warn("[Crochet Amal] تعذّر جلب البيانات من Firebase، سيتم عرض المنتجات الافتراضية.", err);
-      state.products = (window.CA_SEED_PRODUCTS || []).slice();
-      state.settings = { ...(window.CA_DEFAULT_SETTINGS || {}) };
-    }
-
     applySettings();
-    renderFilters();
-    renderProducts();
 
-    // إعادة الترتيب عند تسجيل الدخول/الخروج من لوحة التحكم
-    CA_DB.onChange(async () => {
-      const products = await CA_DB.getProducts().catch(() => state.products);
-      state.products = products;
-      renderFilters();
-      renderProducts();
-    });
+    const settings = await CA_DB.getSettings();
+    state.settings = settings;
+    applySettings();
+
+    await loadProducts();
   }
 
   if (document.readyState === "loading") {

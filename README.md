@@ -5,7 +5,7 @@
 - **صفحة هبوط (متجر)** بتصميم عربي RTL دافئ، فلاتر أقسام، سلة، وصفحة تفاصيل لكل منتج.
 - **الطلبات تصل عبر واتساب** برسالة جاهزة تحتوي المنتجات والكميات والمجموع.
 - **لوحة تحكم للمشرفة** لرفع المنتجات بالصور، تعديلها، حذفها، وتغيير إعدادات المتجر.
-- **مربوط بـ Firebase** (Firestore + Authentication + Storage) مع **وضع تجريبي** يعمل بدون أي إعداد.
+- **مربوط بـ Firebase** (Firestore + Authentication + Storage) — **وضع حقيقي فقط**، كل ما يراه الزبناء يأتي من قاعدة بياناتك.
 
 ---
 
@@ -26,7 +26,8 @@ node server.js
 
 > يمكن أيضًا فتح `index.html` مباشرة، لكن يُفضّل استخدام خادم محلي (مطلوب لـ Firebase).
 
-**كلمة المرور التجريبية للوحة التحكم:** `amal1234` (تعمل فقط قبل ربط Firebase).
+**للدخول إلى لوحة التحكم** استخدمي البريد وكلمة المرور اللذين تنشئينهما في **Firebase ← Authentication ← Users**.
+لن يعمل الموقع قبل إتمام خطوات الإعداد أدناه (Firestore + Storage + قواعد الأمان).
 
 ---
 
@@ -42,7 +43,7 @@ ma/
 ├── js/
 │   ├── firebase-config.js     # ⚠️ ضعي إعدادات Firebase هنا
 │   ├── data.js                # الأقسام والمنتجات والإعدادات الافتراضية
-│   ├── store.js               # طبقة البيانات (Firebase + وضع تجريبي)
+│   ├── store.js               # طبقة البيانات (Firestore + Auth + Storage)
 │   ├── main.js                # منطق المتجر (فلاتر، سلة، واتساب)
 │   └── admin.js               # منطق لوحة التحكم
 ├── assets/img/                # صور المنتجات
@@ -84,14 +85,16 @@ ma/
 **Project settings (⚙️) → Your apps → Web app (`</>`)** ← سجّلي التطبيق وانسخي القيم إلى:
 `js/firebase-config.js`
 
+الملف **`js/firebase-config.js`** مضبوط مسبقًا على مشروعك الحقيقي:
+
 ```js
 window.FIREBASE_CONFIG = {
-  apiKey: "AIza…",
-  authDomain: "crochet-amal.firebaseapp.com",
-  projectId: "crochet-amal",
-  storageBucket: "crochet-amal.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef",
+  apiKey: "AIzaSyDn3HX…",
+  authDomain: "amale-crochet.firebaseapp.com",
+  projectId: "amale-crochet",
+  storageBucket: "amale-crochet.firebasestorage.app",
+  messagingSenderId: "1029434187104",
+  appId: "1:1029434187104:web:8ff1c2bf2a2b048ae51205",
 };
 ```
 
@@ -164,17 +167,26 @@ firebase deploy --only hosting
 
 ---
 
-## 🧪 الوضع التجريبي (بدون Firebase)
+## ✅ قائمة التحقق قبل فتح المتجر للزبناء
 
-إذا كانت `js/firebase-config.js` فارغة:
+| # | الخطوة | المكان |
+| --- | --- | --- |
+| 1 | تفعيل **Email/Password** | Firebase ← Authentication ← Sign-in method |
+| 2 | إنشاء مستخدمة المشرفة (بريد + كلمة مرور) | Firebase ← Authentication ← Users |
+| 3 | إنشاء **Firestore Database** (Production mode) | Firebase ← Build ← Firestore Database |
+| 4 | تفعيل **Storage** | Firebase ← Build ← Storage |
+| 5 | نشر قواعد الأمان | Firestore ← Rules وStorage ← Rules (من مجلد `firebase/`) |
+| 6 | ضبط رقم واتساب | لوحة التحكم ← إعدادات المتجر |
+| 7 | إضافة أول منتج (أو استيراد منتجات البداية) | لوحة التحكم ← المنتجات |
+| 8 | إضافة نطاق الموقع | Firebase ← Authentication ← Settings ← Authorized domains |
 
-- المنتجات والإعدادات تُخزَّن في `localStorage` بنفس واجهة Firebase.
-- الدخول للوحة التحكم بكلمة المرور `amal1234`.
-- زر «استعادة المنتجات الافتراضية» يعيد الست قطع التجريبية.
+> بدون الخطوات 1–5 ستظهر رسالة «تعذّر تحميل المنتجات» أو لن يعمل تسجيل الدخول — وهذا سلوك مقصود: الموقع لا يعرض بيانات وهمية أبدًا.
 
-عند إدخال إعدادات Firebase، يتحول الموقع تلقائيًا إلى الوضع الحقيقي — دون أي تغيير في الكود.
-
----
+### أول تشغيل (5 دقائق)
+1. افتحي `admin.html` ← سجّلي الدخول بحساب Firebase.
+2. في تبويب **المنتجات** سيظهر زر **«استيراد منتجات البداية»** — يضيف ٦ قطع إلى Firestore لتراها في المتجر فورًا، ثم عدّلي الصور والأسعار.
+3. اضغطي **إعدادات المتجر** وضعي رقم واتساب الحقيقي (بصيغة `2126XXXXXXXX`).
+4. افتحي `index.html` — المتجر الآن حقيقي وكل زبونة ترى منتجاتك وتطلب عبر واتساب.
 
 ## 🌐 النشر
 
@@ -213,5 +225,17 @@ firebase deploy --only hosting
 - واجهة عربية RTL متجاوبة (جوال/تابلت/سطح مكتب) مع مراعاة `prefers-reduced-motion`.
 - السلة والمفضلة محفوظتان محليًا للزبونة.
 - البيانات الحساسة (كلمة المرور) لا تُخزَّن في الكود؛ المصادقة تتم عبر Firebase Auth.
+
+## 🧯 حل المشاكل الشائعة
+
+| الرسالة / المشكلة | السبب والحل |
+| --- | --- |
+| «تعذّر تحميل المنتجات» | Firestore غير مُنشأ أو القواعد تمنع القراءة ← نفّذي الخطوات 3 و5 |
+| «البريد أو كلمة المرور غير صحيحة» | لا يوجد مستخدم بهذا البريد ← أنشئيه في Authentication ← Users |
+| «طريقة الدخول بالبريد غير مفعّلة» | فعّلي Email/Password في Authentication |
+| «صلاحيات غير كافية» عند الحفظ | لم يُنشر ملف `firebase/firestore.rules` أو انتهت الجلسة |
+| «غير مصرّح برفع الصور» | Storage غير مفعّل أو قواعده غير منشورة |
+| «هذا النطاق غير مسموح» | أضيفي نطاقك في Authorized domains |
+| المنتجات لا تظهر للزبناء بعد الإضافة | تأكدي أن المنتج «متوفر»، ثم حدّثي الصفحة (Firestore يحدّث لحظيًا عند إعادة التحميل) |
 
 صُنع بحبّ وخيط 🧶
