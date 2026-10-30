@@ -1,125 +1,86 @@
 /* ============================================================
-   طبقة البيانات: Firebase (Firestore + Auth + Storage)
-   مع وضع تجريبي محلي (localStorage) يعمل بدون أي إعدادات.
+   طبقة البيانات — Firebase فقط (Firestore + Auth + Storage)
+   لا يوجد أي وضع تجريبي: كل ما يُعرض في المتجر يأتي من Firestore.
    ============================================================ */
 
 window.CA_DB = (function () {
   const cfg = window.FIREBASE_CONFIG || {};
-  const looksConfigured =
-    !!cfg.apiKey &&
-    !!cfg.projectId &&
-    !/^\s*$/.test(cfg.apiKey) &&
-    !cfg.apiKey.includes("PASTE") &&
-    !cfg.apiKey.includes("ضع");
+  // يمكن تجاوز المصدر لاستضافة SDK محليًا أو للاختبار
+  const SDK = window.CA_FIREBASE_SDK_BASE || "https://www.gstatic.com/firebasejs/10.12.2/";
 
-  const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
-  const LS_PRODUCTS = "ca_demo_products_v1";
-  const LS_SETTINGS = "ca_demo_settings_v1";
-  const LS_SESSION = "ca_demo_session";
+  const configured =
+    !!cfg.apiKey && !!cfg.projectId && !!cfg.appId && !String(cfg.apiKey).includes("PASTE");
 
   let live = false;
   let bootError = null;
-  let fb = null; // { app, db, auth, storage, api }
+  let bootPromise = null;
+  let fb = null;
 
   const listeners = new Set();
 
-  /* ---------------- helpers ---------------- */
-  const readLS = (key, fallback) => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  };
-
-  const writeLS = (key, value) => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
   const slug = (text) =>
-    String(text || "product")
+    String(text || "image")
       .trim()
       .toLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu, "-")
-      .replace(/^-+|-+$/g, "") || "product";
-
-  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
-  function seedIfNeeded() {
-    const stored = readLS(LS_PRODUCTS, null);
-    if (!stored) {
-      writeLS(LS_PRODUCTS, window.CA_SEED_PRODUCTS || []);
-    }
-    const settings = readLS(LS_SETTINGS, null);
-    if (!settings) {
-      writeLS(LS_SETTINGS, window.CA_DEFAULT_SETTINGS || {});
-    }
-  }
-
-  seedIfNeeded();
+      .replace(/^-+|-+$/g, "") || "image";
 
   /* ---------------- boot ---------------- */
-  async function boot() {
-    if (!looksConfigured) {
-      live = false;
-      notify();
-      return { live: false, reason: "unconfigured" };
-    }
-    try {
-      const [appMod, authMod, fsMod, stMod] = await Promise.all([
-        import(SDK + "firebase-app.js"),
-        import(SDK + "firebase-auth.js"),
-        import(SDK + "firebase-firestore.js"),
-        import(SDK + "firebase-storage.js"),
-      ]);
+  function boot() {
+    if (bootPromise) return bootPromise;
 
-      const app = appMod.initializeApp(cfg);
-      const auth = authMod.getAuth(app);
-      const db = fsMod.getFirestore(app);
-      let storage = null;
-      try {
-        storage = stMod.getStorage(app);
-      } catch (e) {
-        storage = null;
+    bootPromise = (async () => {
+      if (!configured) {
+        bootError = new Error("إعدادات Firebase غير مكتملة في js/firebase-config.js");
+        return { live: false, error: bootError };
       }
+      try {
+        const [appMod, authMod, fsMod, stMod] = await Promise.all([
+          import(SDK + "firebase-app.js"),
+          import(SDK + "firebase-auth.js"),
+          import(SDK + "firebase-firestore.js"),
+          import(SDK + "firebase-storage.js"),
+        ]);
 
-      fb = {
-        app,
-        auth,
-        db,
-        storage,
-        api: {
-          ...appMod,
-          ...authMod,
-          ...fsMod,
-          ...(storage ? stMod : {}),
-        },
-        authMod,
-        fsMod,
-        stMod,
-      };
+        const app = appMod.initializeApp(cfg);
+        const auth = authMod.getAuth(app);
+        auth.languageCode = "ar";
+        const db = fsMod.getFirestore(app);
+        let storage = null;
+        try {
+          storage = stMod.getStorage(app);
+        } catch (e) {
+          storage = null;
+        }
 
-      live = true;
-      notify();
-      return { live: true };
-    } catch (err) {
-      console.warn("[Crochet Amal] تعذّر الاتصال بـ Firebase، سيتم استخدام الوضع التجريبي:", err);
-      bootError = err;
-      live = false;
-      notify();
-      return { live: false, reason: "sdk-error", error: err };
-    }
+        fb = {
+          auth,
+          db,
+          storage,
+          appMod,
+          authMod,
+          fsMod,
+          stMod,
+          authFns: authMod,
+          fsFns: fsMod,
+          stFns: stMod,
+        };
+
+        live = true;
+        notify();
+        return { live: true };
+      } catch (err) {
+        console.error("[Crochet Amal] تعذّر تهيئة Firebase:", err);
+        bootError = err;
+        live = false;
+        notify();
+        return { live: false, error: err };
+      }
+    })();
+
+    return bootPromise;
   }
 
-  const ready = boot();
-
-  /* ---------------- change notification ---------------- */
   function notify() {
     listeners.forEach((fn) => {
       try {
@@ -133,6 +94,37 @@ window.CA_DB = (function () {
   function onChange(fn) {
     listeners.add(fn);
     return () => listeners.delete(fn);
+  }
+
+  /* ---------------- errors ---------------- */
+  function humanError(err) {
+    if (!err) return "حدث خطأ غير معروف.";
+    const code = err.code || "";
+    const map = {
+      "auth/invalid-api-key": "مفتاح API غير صحيح — راجعي js/firebase-config.js",
+      "auth/api-key-not-valid.-please-pass-a-valid-api-key.":
+        "مفتاح API غير صحيح — راجعي js/firebase-config.js",
+      "auth/user-not-found": "لا يوجد مستخدم بهذا البريد.",
+      "auth/wrong-password": "كلمة المرور غير صحيحة.",
+      "auth/invalid-credential": "البريد أو كلمة المرور غير صحيحة.",
+      "auth/invalid-email": "صيغة البريد الإلكتروني غير صحيحة.",
+      "auth/too-many-requests": "محاولات كثيرة — حاولي بعد قليل.",
+      "auth/operation-not-allowed":
+        "طريقة الدخول بالبريد غير مفعّلة. فعّلي Email/Password في Firebase ← Authentication.",
+      "auth/unauthorized-domain":
+        "هذا النطاق غير مسموح. أضيفيه في Firebase ← Authentication ← Settings ← Authorized domains.",
+      "auth/network-request-failed": "تعذّر الاتصال بالشبكة. تحققي من الإنترنت.",
+      "permission-denied":
+        "صلاحيات غير كافية. تأكدي من نشر قواعد Firestore ومن تسجيل الدخول.",
+      unavailable: "تعذّر الوصول إلى قاعدة البيانات. تحققي من الاتصال أو أن Firestore مُنشأ.",
+      "failed-precondition":
+        "Firestore غير مُنشأ بعد. أنشئيه من Firebase Console ← Firestore Database.",
+      "not-found": "العنصر غير موجود.",
+      "storage/unauthorized": "غير مصرّح برفع الصور. راجعي قواعد Storage وتسجيل الدخول.",
+      "storage/retry-limit-exceeded": "انتهت مهلة رفع الصورة. تحققي من الاتصال.",
+      "storage/unknown": "تعذّر رفع الصورة. تأكدي من تفعيل Storage.",
+    };
+    return map[code] || err.message || "حدث خطأ غير متوقع.";
   }
 
   /* ---------------- products ---------------- */
@@ -149,8 +141,7 @@ window.CA_DB = (function () {
       price: Number(data.price) || 0,
       oldPrice: data.oldPrice ? Number(data.oldPrice) : null,
       category: data.category || "إكسسوارات",
-      image: data.image || "assets/img/p-flowers.jpg",
-      images: Array.isArray(data.images) ? data.images : [],
+      image: data.image || "",
       available: data.available !== false,
       featured: data.featured === true,
       order: Number(data.order) || 0,
@@ -159,92 +150,90 @@ window.CA_DB = (function () {
   }
 
   async function getProducts() {
-    await ready;
-    if (!live) {
-      const list = readLS(LS_PRODUCTS, []);
-      return list.map((p) => normalizeProduct(p.id, p));
-    }
-    const { api, db, fsMod } = fb;
-    try {
-      const snap = await api.getDocs(api.collection(db, "products"));
-      return snap.docs.map((d) => normalizeProduct(d.id, d.data()));
-    } catch (err) {
-      console.error("[Crochet Amal] فشل تحميل المنتجات:", err);
-      throw err;
-    }
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const { fsFns, db } = fb;
+    const snap = await fsFns.getDocs(fsFns.collection(db, "products"));
+    return snap.docs.map((d) => normalizeProduct(d.id, d.data()));
   }
 
-  async function addProduct(data) {
-    await ready;
-    const payload = {
-      name: data.name,
-      description: data.description || "",
+  function cleanPayload(data) {
+    return {
+      name: String(data.name || "").trim(),
+      description: String(data.description || "").trim(),
       price: Number(data.price) || 0,
       oldPrice: data.oldPrice ? Number(data.oldPrice) : null,
-      category: data.category || "إكسسوارات",
+      category: String(data.category || "إكسسوارات").trim(),
       image: data.image || "",
       available: data.available !== false,
       featured: data.featured === true,
       order: Number(data.order) || 0,
     };
+  }
 
-    if (!live) {
-      const list = readLS(LS_PRODUCTS, []);
-      const id = newId();
-      const next = [{ ...payload, id, createdAt: new Date().toISOString() }, ...list];
-      const stored = writeLS(LS_PRODUCTS, next);
-      if (!stored || !readLS(LS_PRODUCTS, []).some((p) => p.id === id)) {
-        throw new Error("مساحة التخزين المحلية ممتلئة. اربطي Firebase أو استخدمي صورة أصغر.");
-      }
-      return { id };
-    }
-
-    const { api, db } = fb;
-    payload.createdAt = api.serverTimestamp();
-    const ref = await api.addDoc(api.collection(db, "products"), payload);
+  async function addProduct(data) {
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const { fsFns, db } = fb;
+    const payload = cleanPayload(data);
+    payload.createdAt = fsFns.serverTimestamp();
+    const ref = await fsFns.addDoc(fsFns.collection(db, "products"), payload);
     return { id: ref.id };
   }
 
   async function updateProduct(id, data) {
-    await ready;
-    if (!live) {
-      const list = readLS(LS_PRODUCTS, []);
-      const next = list.map((p) => (p.id === id ? { ...p, ...data } : p));
-      if (!writeLS(LS_PRODUCTS, next)) {
-        throw new Error("مساحة التخزين المحلية ممتلئة. اربطي Firebase أو استخدمي صورة أصغر.");
-      }
-      return;
-    }
-    const { api, db } = fb;
-    const payload = { ...data };
-    delete payload.id;
-    delete payload.createdAt;
-    await api.updateDoc(api.doc(db, "products", id), payload);
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const { fsFns, db } = fb;
+    const payload = cleanPayload(data);
+    await fsFns.updateDoc(fsFns.doc(db, "products", id), payload);
   }
 
   async function deleteProduct(id) {
-    await ready;
-    if (!live) {
-      writeLS(LS_PRODUCTS, readLS(LS_PRODUCTS, []).filter((p) => p.id !== id));
-      return;
-    }
-    const { api, db } = fb;
-    await api.deleteDoc(api.doc(db, "products", id));
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const { fsFns, db } = fb;
+    await fsFns.deleteDoc(fsFns.doc(db, "products", id));
   }
 
-  async function resetDemoProducts() {
-    writeLS(LS_PRODUCTS, window.CA_SEED_PRODUCTS || []);
+  /**
+   * استيراد منتجات البداية (٦ قطع بصورها الجاهزة) إلى Firestore.
+   * تُستخدم مرة واحدة من لوحة التحكم بعد تسجيل الدخول.
+   */
+  async function seedStarterProducts() {
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const { fsFns, db } = fb;
+    const seeds = window.CA_SEED_PRODUCTS || [];
+    if (!seeds.length) throw new Error("لا توجد منتجات بداية في js/data.js");
+
+    const col = fsFns.collection(db, "products");
+    await Promise.all(
+      seeds.map((p) =>
+        fsFns.addDoc(col, {
+          name: p.name,
+          description: p.description || "",
+          price: Number(p.price) || 0,
+          oldPrice: p.oldPrice ? Number(p.oldPrice) : null,
+          category: p.category || "إكسسوارات",
+          image: p.image || "",
+          available: p.available !== false,
+          featured: p.featured === true,
+          order: Number(p.order) || 0,
+          createdAt: fsFns.serverTimestamp(),
+        })
+      )
+    );
+    return seeds.length;
   }
 
   /* ---------------- settings ---------------- */
   async function getSettings() {
-    await ready;
-    if (!live) {
-      return { ...(window.CA_DEFAULT_SETTINGS || {}), ...readLS(LS_SETTINGS, {}) };
-    }
-    const { api, db } = fb;
+    const res = await boot();
+    if (!res.live) return { ...(window.CA_DEFAULT_SETTINGS || {}) };
+    const { fsFns, db } = fb;
     try {
-      const snap = await api.getDoc(api.doc(db, "settings", "site"));
+      const snap = await fsFns.getDoc(fsFns.doc(db, "settings", "site"));
       return { ...(window.CA_DEFAULT_SETTINGS || {}), ...(snap.exists() ? snap.data() : {}) };
     } catch (err) {
       console.warn("[Crochet Amal] تعذّر تحميل الإعدادات:", err);
@@ -253,96 +242,74 @@ window.CA_DB = (function () {
   }
 
   async function saveSettings(data) {
-    await ready;
-    if (!live) {
-      writeLS(LS_SETTINGS, { ...readLS(LS_SETTINGS, {}), ...data });
-      return;
-    }
-    const { api, db } = fb;
-    await api.setDoc(api.doc(db, "settings", "site"), data, { merge: true });
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const { fsFns, db } = fb;
+    await fsFns.setDoc(fsFns.doc(db, "settings", "site"), data, { merge: true });
   }
 
   /* ---------------- auth ---------------- */
-  const demoSession = () => readLS(LS_SESSION, null);
-
   function currentUser() {
-    if (!live) return demoSession();
-    return (fb && fb.auth.currentUser) || null;
+    return (live && fb && fb.auth.currentUser) || null;
   }
 
   function onAuth(cb) {
     if (!live) {
-      cb(demoSession());
+      cb(null);
       return () => {};
     }
     return fb.authMod.onAuthStateChanged(fb.auth, (u) =>
-      cb(u ? { uid: u.uid, email: u.email, demo: false } : null)
+      cb(u ? { uid: u.uid, email: u.email } : null)
     );
   }
 
   async function signIn(email, password) {
-    await ready;
-    if (!live) {
-      if (password !== (window.CA_DEMO_PASSWORD || "amal1234")) {
-        throw new Error("كلمة المرور التجريبية غير صحيحة.");
-      }
-      const user = { email: email || "demo@crochetamal.com", demo: true };
-      writeLS(LS_SESSION, user);
-      notify();
-      return user;
-    }
-    const { api, auth } = fb;
-    const cred = await api.signInWithEmailAndPassword(auth, email.trim(), password);
-    return { uid: cred.user.uid, email: cred.user.email, demo: false };
+    const res = await boot();
+    if (!res.live) throw bootError || new Error("Firebase غير مهيّأ");
+    const user = await fb.authMod.signInWithEmailAndPassword(
+      fb.auth,
+      String(email || "").trim(),
+      password
+    );
+    return { uid: user.user.uid, email: user.user.email };
   }
 
   async function signOut() {
-    await ready;
-    if (!live) {
-      localStorage.removeItem(LS_SESSION);
-      notify();
-      return;
-    }
-    await fb.api.signOut(fb.auth);
+    if (!live) return;
+    await fb.authMod.signOut(fb.auth);
   }
 
   /* ---------------- storage ---------------- */
   async function uploadImage(file) {
-    await ready;
-    if (!live || !fb.storage) {
-      return await fileToDataUrl(file);
+    const res = await boot();
+    if (!res.live || !fb.storage) {
+      throw new Error("Storage غير مفعّل في Firebase — فعّليه ثم أعيدي المحاولة.");
     }
-    const { api, storage } = fb;
-    const path = `products/${Date.now()}-${slug(file.name).slice(0, 40)}`;
-    const ref = api.ref(storage, path);
-    await api.uploadBytes(ref, file, { contentType: file.type });
-    return await api.getDownloadURL(ref);
+    const path = `products/${Date.now()}-${slug(file.name).slice(0, 40)}.jpg`;
+    const ref = fb.stFns.ref(fb.storage, path);
+    await fb.stFns.uploadBytes(ref, file, { contentType: file.type || "image/jpeg" });
+    return await fb.stFns.getDownloadURL(ref);
   }
 
-  function fileToDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
+  const ready = boot();
 
   return {
     ready,
+    boot,
     onChange,
+    humanError,
     get isLive() {
       return live;
     },
     get bootError() {
       return bootError;
     },
-    configured: looksConfigured,
+    configured,
     getProducts,
     addProduct,
     updateProduct,
     deleteProduct,
-    resetDemoProducts,
+    seedStarterProducts,
     getSettings,
     saveSettings,
     currentUser,

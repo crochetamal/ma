@@ -177,8 +177,8 @@
 .status-pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); flex: none; }
 .status-pill.is-live { background: #e9f5ee; border-color: #c3e5d2; color: #1f7a4d; }
 .status-pill.is-live i { background: #2f9e63; }
-.status-pill.is-demo { background: #fdf4e3; border-color: #f0e0bd; color: #946a13; }
-.status-pill.is-demo i { background: var(--gold); }
+.status-pill.is-error { background: #fdecea; border-color: #f5c9c0; color: #a4402c; }
+.status-pill.is-error i { background: #c0563c; }
 
 .user-pill {
   font-size: .82rem;

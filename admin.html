@@ -57,11 +57,10 @@
       <p class="form-error" id="loginError" hidden></p>
     </form>
 
-    <div class="demo-hint" id="demoHint" hidden>
-      <b>الوضع التجريبي</b>
-      <p>لم يتم ربط Firebase بعد. يمكنك الدخول بكلمة المرور التجريبية:</p>
-      <code>amal1234</code>
-      <p style="margin:.6rem 0 0;font-size:.82rem">لتشغيل اللوحة بشكل حقيقي، املأ <code>js/firebase-config.js</code>.</p>
+    <div class="demo-hint" id="connHint" hidden>
+      <b>تعذّر الاتصال بـ Firebase</b>
+      <p id="connHintText">تحقّقي من الاتصال بالإنترنت ومن إعدادات المشروع.</p>
+      <p style="margin:.5rem 0 0;font-size:.82rem">تأكدي أيضًا من تفعيل <code>Authentication → Email/Password</code> وإنشاء مستخدمة لوحة التحكم.</p>
     </div>
 
     <a class="login-back" href="index.html">← العودة إلى المتجر</a>
@@ -143,12 +142,20 @@
           <div class="admin-products" id="adminProducts"></div>
         </div>
 
-        <div class="panel panel--muted" id="demoResetPanel" hidden>
+        <div class="panel panel--muted" id="seedPanel" hidden>
           <div>
-            <h3 style="margin-bottom:.2rem">بيانات تجريبية</h3>
-            <p style="margin:0;color:var(--ink-soft);font-size:.9rem">يمكنك استعادة المنتجات الافتراضية (٦ قطع) لبدء العرض من جديد.</p>
+            <h3 style="margin-bottom:.2rem">بدء سريع</h3>
+            <p style="margin:0;color:var(--ink-soft);font-size:.9rem">لديك ٦ قطع جاهزة يمكن استيرادها إلى متجرك دفعة واحدة، ثم تعدّليها كما تشائين (الصور التجريبية قابلة للاستبدال).</p>
           </div>
-          <button class="btn btn--ghost btn--sm" id="resetDemoBtn">استعادة المنتجات الافتراضية</button>
+          <button class="btn btn--primary btn--sm" id="seedBtn">استيراد منتجات البداية</button>
+        </div>
+
+        <div class="panel panel--muted" id="setupWarnPanel" hidden>
+          <div>
+            <h3 style="margin-bottom:.2rem">⚠️ لم يتم ضبط رقم واتساب</h3>
+            <p style="margin:0;color:var(--ink-soft);font-size:.9rem">الطلبات لن تصل إليك قبل وضع رقمك الحقيقي في «إعدادات المتجر».</p>
+          </div>
+          <button class="btn btn--ghost btn--sm" data-goto-tab="settings">ضبط الآن</button>
         </div>
       </section>
 
